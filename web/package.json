@@ -1,0 +1,75 @@
+{
+  "name": "Speech-To-Text",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "dev": "vue-cli-service serve --mode development",
+    "dev:prod": "vue-cli-service serve --mode production",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.1.1",
+    "@fortawesome/free-brands-svg-icons": "^6.1.1",
+    "@fortawesome/free-solid-svg-icons": "^6.1.1",
+    "@fortawesome/vue-fontawesome": "^2.0.8",
+    "agora-rtc-sdk-ng": "^4.11.0",
+    "agora-rtm-sdk": "^1.4.5",
+    "axios": "0.24.0",
+    "babel-plugin-component": "^1.1.1",
+    "core-js": "^3.8.3",
+    "element-ui": "^2.15.8",
+    "lodash": "^4.17.21",
+    "protobufjs": "^6.11.2",
+    "v-tooltip": "^2.1.3",
+    "vue": "^2.6.14",
+    "vue-router": "3.4.9"
+  },
+  "lint-staged": {
+    "src/**/*.{js,vue}": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@vue/cli-plugin-babel": "4.4.6",
+    "@vue/cli-plugin-eslint": "4.4.6",
+    "@vue/cli-service": "4.4.6",
+    "babel-eslint": "10.1.0",
+    "babel-plugin-dynamic-import-node": "2.3.3",
+    "chalk": "4.1.0",
+    "compression-webpack-plugin": "5.0.2",
+    "connect": "3.6.6",
+    "eslint": "7.15.0",
+    "eslint-plugin-vue": "7.2.0",
+    "lint-staged": "10.5.3",
+    "runjs": "4.4.2",
+    "sass": "1.32.13",
+    "sass-loader": "10.1.1",
+    "script-ext-html-webpack-plugin": "2.1.5",
+    "svg-sprite-loader": "5.1.1",
+    "vue-template-compiler": "^2.6.14"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "@babel/eslint-parser"
+    },
+    "rules": {}
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
