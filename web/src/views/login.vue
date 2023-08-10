@@ -113,6 +113,6 @@ export default {
 
 .tabs {
   position: absolute;
-  top: 150px;
+  top: 120px;
 }
 </style>

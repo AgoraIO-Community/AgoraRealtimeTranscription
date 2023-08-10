@@ -12,9 +12,7 @@ function resolve(dir) {
 }
 
 const CompressionPlugin = require('compression-webpack-plugin')
-
 const name = process.env.VUE_APP_TITLE || '' // 网页标题
-
 const port = process.env.port || process.env.npm_config_port || 8080 // 端口
 
 // vue.config.js 配置说明
@@ -39,6 +37,10 @@ module.exports = {
     host: 'localhost',
     port: port,
     open: true,
+    overlay: {
+      warnings: false,
+      errors: false
+    },
     proxy: {
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       [process.env.VUE_APP_BASE_API]: {
@@ -103,7 +105,7 @@ module.exports = {
             .plugin('ScriptExtHtmlWebpackPlugin')
             .after('html')
             .use('script-ext-html-webpack-plugin', [{
-            // `runtime` must same as runtimeChunk name. default is `runtime`
+              // `runtime` must same as runtimeChunk name. default is `runtime`
               inline: /runtime\..*\.js$/
             }])
             .end()
@@ -133,8 +135,8 @@ module.exports = {
             })
           config.optimization.runtimeChunk('single'),
           {
-             from: path.resolve(__dirname, './public/robots.txt'), //防爬虫文件
-             to: './' //到根目录下
+            from: path.resolve(__dirname, './public/robots.txt'), //防爬虫文件
+            to: './' //到根目录下
           }
         }
       )
