@@ -6,6 +6,8 @@ import "./plugins/element.js";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faMicrophone, faMicrophoneSlash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { Loading } from 'element-ui';
+Vue.use(Loading.directive);
 
 library.add(faMicrophone, faMicrophoneSlash );
 Vue.component("font-awesome-icon", FontAwesomeIcon);
