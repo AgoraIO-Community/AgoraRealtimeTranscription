@@ -6,3 +6,5 @@ __pycache__/
 start-venv.sh
 # SttApi.conf
 SttApi.conf
+# temp files folder
+files/
