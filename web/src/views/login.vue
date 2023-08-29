@@ -3,14 +3,7 @@
     <!-- Login Panel -->
     <div class="fs24 mobile">
       <el-button class="setting" icon="el-icon-setting" circle @click="dialogFormVisible = true" />
-      <el-tabs v-model="activeTab" type="card" class="tabs">
-        <el-tab-pane label="Real-Time" name="real-time">
-          <RealTime></RealTime>
-        </el-tab-pane>
-        <el-tab-pane label="Offline" name="offline">
-          <Offline></Offline>
-        </el-tab-pane>
-      </el-tabs>
+      <RealTime></RealTime>
     </div>
     <!-- Setting Dialog -->
     <el-dialog title="Settings" :visible.sync="dialogFormVisible" width="400px" :close-on-click-modal="false">
@@ -58,11 +51,6 @@
 
 <script>
 import RealTime from '@/components/Real-Time/index.vue' // STT manager class js
-import Offline from "@/components/Offline/index.vue"           // Agora RTC manager class
-// import sttApiManager from '@/components/STTApiManager.js' // STT manager class js
-// import rtcMgr from "@/components/RtcManager.js"           // Agora RTC manager class
-// import rtmMgr from "@/components/RtmManager.js"           // Agora RTM manager class
-
 
 const VUE_APP_ID = process.env.VUE_APP_ID
 export default {
@@ -88,7 +76,6 @@ export default {
   },
   components: {
     RealTime,
-    Offline,
   },
   created() {
     console.log('version 6, by huyuhua@agora.io 2023.06.06')
