@@ -65,10 +65,10 @@ export default {
         { 'code': 'de-DE', 'value': 'German (Germany)' },
         { 'code': 'es-ES', 'value': 'Spanish (Spain)' },
         { 'code': 'fr-FR', 'value': 'French (French)' },
-        { 'code': 'it_IT', 'value': 'Italian (Italy)' },
+        { 'code': 'it-IT', 'value': 'Italian (Italy)' },
         { 'code': 'zh-CN', 'value': 'Chinese (Mandarin, Simplified)	' },
-        { 'code': 'zh_TW', 'value': 'Chinese (Taiwanese Putonghua)' },
-        { 'code': 'zh_HK', 'value': 'Chinese (Cantonese, Traditional)' },
+        { 'code': 'zh-TW', 'value': 'Chinese (Taiwanese Putonghua)' },
+        { 'code': 'zh-HK', 'value': 'Chinese (Cantonese, Traditional)' },
         { 'code': 'pt-PT', 'value': 'Portuguese (Portugal)' },
         { 'code': 'id-ID', 'value': 'Indonesian (Indonesia)' }
       ]
