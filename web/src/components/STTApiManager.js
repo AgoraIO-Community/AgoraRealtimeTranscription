@@ -8,8 +8,7 @@ import axios from 'axios'
 
 const VUE_APP_ID = process.env.VUE_APP_ID
 const STT_BASE_PATH = process.env.VUE_APP_BASE_PATH
-const API_AUTH_KEY = process.env.VUE_APP_API_AUTH_KEY
-const API_AUTH_SECRET = process.env.VUE_APP_API_AUTH_SECRET
+const API_BASIC_TOKEN = process.env.VUE_APP_API_BASIC_TOKEN
 
 class STTApiManager {
   // properties
@@ -22,9 +21,7 @@ class STTApiManager {
 
 
   basicAuthentication() {
-    var token = API_AUTH_KEY + ':' + API_AUTH_SECRET
-    var hash = Buffer.from(token).toString('base64')
-    return 'Basic ' + hash
+    return 'Basic ' + API_BASIC_TOKEN
   }
 
   // acquire STT token
