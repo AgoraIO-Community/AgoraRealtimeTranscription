@@ -1,19 +1,19 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Login from "@/views/login"
-import Chatroom from "@/views/chatroom.vue"
+import Home from "@/views/Home.vue"
+import Chatroom from "@/views/Chatroom.vue"
 
 Vue.use(Router)
 
 const routes = [
   {
     path: '/',
-    name: 'login',
-    component: Login,
+    name: 'HomeView',
+    component: Home,
   },
   {
     path: '/chatroom',
-    name: 'chatroom',
+    name: 'Chatroom',
     component: Chatroom,
   },
 ]

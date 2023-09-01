@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="chatroom-main"> 
     <div class="fs24 mobile">
       <div class="room-view">
         <div class="room-title">Channel: {{ roomConfig.channelName }}</div>
@@ -10,18 +10,23 @@
         </div>
       </div>
     </div>
-    <div class="buttonList">
-      <el-button v-if="sttStarted" icon="el-icon-microphone"
-        style="width:auto;background:#cb4c38;font-size:30px;border:#cb4c38;" circle @click="stopStt" size="mini"
-        type="primary" title="Stop Transcription" :loading="loading" />
-      <el-button v-else icon="el-icon-turn-off-microphone"
-        style="width:auto;font-size:30px;" circle @click="startStt" size="mini" 
-        :disabled="!rtcJoined" type="primary" title="Start Transcription" :loading="loading" />
-      <el-button size="mini" v-show="true" :disabled="!rtcJoined" type="primary" plain @click="leaveRoom">Leave Room</el-button>
-      <!-- <el-button size="mini" v-show="false" :disabled="!rtcJoined" type="primary" plain @click="fanl" v-if="sttStarted">load transcription</el-button> -->
-      <!-- <el-button size="mini" v-show="false" :disabled="!rtcJoined" type="primary" plain @click="noFanl" v-if="sttStarted">load close caption</el-button> -->
-      <el-button size="mini" v-show="true" :disabled="!rtcJoined" type="primary" plain @click="showFullText">Full Transcription</el-button>
-      <el-button size="mini" v-show="true" :disabled="!rtcJoined" type="primary" plain @click="showConversation">Conversation</el-button>
+    <div class="buttonList1">
+      <div>
+        <el-button v-if="sttStarted" icon="el-icon-microphone"
+          style="width:auto;background:#cb4c38;font-size:30px;border:#cb4c38;" circle @click="stopStt" size="mini"
+          type="primary" title="Stop Transcription" :loading="loading" />
+        <el-button v-else icon="el-icon-turn-off-microphone"
+          style="width:auto;font-size:30px;" circle @click="startStt" size="mini" 
+          :disabled="!rtcJoined" type="primary" title="Start Transcription" :loading="loading"/>
+        <el-button size="mini" v-show="true" :disabled="!rtcJoined" type="primary" @click="showFullText">Full Transcription</el-button>
+        <el-button size="mini" v-show="true" :disabled="!rtcJoined" type="primary" @click="showConversation">Conversation</el-button>
+      </div>
+      <div>
+        <el-button size="mini" v-show="true" :disabled="!rtcJoined" type="default" @click="copyResultToAnalysis">
+          Load<br/>Transcription &gt;<br/>to GPT
+        </el-button>
+      </div>
+      <el-button size="mini" v-show="true" :disabled="!rtcJoined" type="danger" @click="leaveRoom">Leave Room</el-button>
       <!-- <el-button size="mini" v-show="false" type="primary" plain @click="queryFanl" :disabled="!taskId">Query status</el-button> -->
     </div>
     <!-- Full Transcription -->
@@ -56,6 +61,7 @@ import rtcMgr from "@/components/RtcManager.js"           // Agora RTC manager c
 import rtmMgr from "@/components/RtmManager.js"           // Agora RTM manager class
 import sttApiManager from "@/components/STTApiManager.js" // STT manager class js
 import subtitleManager from '@/components/SubtitleManager'
+import gptSetting from "@/components/GPT/GptSetting.js"
 export default {
   name: 'chatroom',
   components: {
@@ -330,6 +336,18 @@ export default {
     showConversation() {
       this.displayConversation = true
     },
+    //
+    copyResultToAnalysis() {
+      let resultText = ''
+      this.subtitles.forEach ((s) => {
+        let name = rtcMgr.allData[s.uid].name
+        let text = s.text
+        let line = name + ':' + text + '\n'
+        resultText += line
+        console.log(s.text)
+      })
+      gptSetting.userContent += resultText
+    },
     // timer
     createSttAutoStopTimer(callback, time) {
       this.autoStopTimer = this.create(`function (e) {
@@ -366,8 +384,8 @@ export default {
   width: 100%;
   flex-flow: column;
   flex-direction: column;
-  margin-top: 200px;
-  height: 90%;
+  margin-top: 2rem;
+  height: 100%;
   box-sizing: border-box;
 }
 .room-title {
@@ -402,5 +420,43 @@ export default {
 .conversation-area {
   padding: 0rem 1rem 0rem 1rem;
   text-align: left;
+}
+.chatroom-main {
+  display: flex;
+}
+.buttonList1 {
+    margin: 8px auto 1px 9px;
+    width: 140px;
+    height: 500px;
+
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-end;
+    justify-content: space-around;
+
+    // display: flex;
+    // flex-flow: column nowrap;
+    // // align-items: center;
+    // // justify-content: flex-start;
+    // align-items: flex-start;
+    // justify-content: space-around;
+
+    // display: inline-block;
+    text-align: center;
+    background-color: transparent;
+
+    .el-button {
+      width: 140px;
+      margin: 1rem 0 0rem 0;
+      margin-left: 0;
+    }
+
+    // .buttonBox {
+    //     width: 120px;
+    //     display: flex;
+    //     flex-flow: row nowrap;
+    //     align-items: center;
+    //     justify-content: space-around;
+    // }
 }
 </style>
