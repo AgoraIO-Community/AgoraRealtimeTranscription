@@ -445,13 +445,15 @@ Washington: Uh, you in university
 Mantho: or you went to university.
 Washington: Yes , I have a degree in computer science.
 Mantho: Okay. All right. All right.`
-    }, { 
-      'id': 5, 'title': 'E-Commerce Blind Box: 90% Accuracy',
-      'text': 'E-Commerce Blind Box: 90% Accuracy'
-    }, { 
-      'id': 6, 'title': 'E-Commerce Blind Box: Agora 95% Accuracy',
-      'text': 'E-Commerce Blind Box: Agora 95% Accuracy'
-    }, { 
+    }, 
+    // { 
+    //   'id': 5, 'title': 'E-Commerce Blind Box: 90% Accuracy',
+    //   'text': 'E-Commerce Blind Box: 90% Accuracy'
+    // }, { 
+    //   'id': 6, 'title': 'E-Commerce Blind Box: Agora 95% Accuracy',
+    //   'text': 'E-Commerce Blind Box: Agora 95% Accuracy'
+    // }, 
+    { 
       'id': 7, 'title': 'Empty',
       'text': 'Empty'
     },
@@ -470,19 +472,21 @@ Mantho: Okay. All right. All right.`
       'system': 'You are an assistant of language learning teacher. You need analyze a conversation of a lesson and provide students language skill level, like TOEFL score and IELTS score. In this conversation, Mantho is teacher, Washington and Saverio are student. Please summary what students interesting on. And provide suggestion for teacher for the content of next lesson.', 
       'prompt': '',
       'defaultText': 3
-    },{ 
-      'id': 3,
-      'title': 'Blind Box Product Summary',
-      'system': '{3}',
-      'prompt': '',
-      'defaultText': 5
-    },{ 
-      'id': 4,
-      'title': 'Translation',
-      'system': '{4}',
-      'prompt': '',
-      'defaultText': 1
-    }, { 
+    },
+    // { 
+    //   'id': 3,
+    //   'title': 'Blind Box Product Summary',
+    //   'system': '{3}',
+    //   'prompt': '',
+    //   'defaultText': 5
+    // },{ 
+    //   'id': 4,
+    //   'title': 'Translation',
+    //   'system': '{4}',
+    //   'prompt': '',
+    //   'defaultText': 1
+    // }, 
+    { 
       'id': 5,
       'title': 'Empty',
       'system': 'Empty',
