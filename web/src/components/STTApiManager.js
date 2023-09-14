@@ -50,11 +50,44 @@ class STTApiManager {
   }
 
   // start STT task
-  async start(channel, languages, translateSource, translateTarget, callback) {
+  // languages
+  /*
+  [
+    {
+      'source': '',
+      'translateTarget': ['', '']
+    },{
+      'source': '', 
+      'translateTarget': ['', '']
+    }
+  ]
+  */
+  async start(channel, languages, sttConfig, callback) {
     // log, delete before release
     //console.log("STTApiManager: start， in channel " + channel + ", language: " + languages)
     //console.log("TokenName is " + this.tokenName)
-    axios.post(`${STT_BASE_PATH}/v1/projects/${VUE_APP_ID}/rtsc/speech-to-text/tasks?builderToken=${this.tokenName}`, {
+    let languageStr = sttConfig.transcriptions.join(',')
+    let translateConfig = []
+    for (const [key, value] of Object.entries(sttConfig.translations)) {
+      console.log(key, value)
+      let translateItem = {
+        "source": key,
+        "target": value
+      }
+      translateConfig.push(translateItem)
+    }
+    console.log('Start lanaguage: ' + languageStr)
+    console.log('Start translate: ' + translateConfig)
+    // sttConfig.translations.forEach((el) => {
+    //   //
+    //   let configItem = {
+    //     "source": el.key,
+    //     "target":["ko-KR"]
+    //   }
+    //   translateConfig
+    // })
+    axios.post(`${STT_BASE_PATH}/v1/projects/${VUE_APP_ID}/rtsc/speech-to-text/tasks?builderToken=${this.tokenName}`,
+    {
       "audio": {
         "subscribeSource": "AGORARTC",
         "agoraRtcConfig": {
@@ -73,7 +106,7 @@ class STTApiManager {
           "RECOGNIZE"
         ],
         "recognizeConfig": {
-          "language": languages,
+          "language": languageStr,
           "model": "Model",
           "connectionTimeout": 60,
           "output": {
@@ -88,10 +121,7 @@ class STTApiManager {
           }
         },
         "translateConfig": {
-          "languages":[{
-              "source": translateSource,
-              "target":[translateTarget]
-          }]
+          "languages": translateConfig
         }
       }
     }, {

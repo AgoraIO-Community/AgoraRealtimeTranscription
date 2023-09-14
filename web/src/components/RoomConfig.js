@@ -3,9 +3,6 @@ class RoomConfig {
   userName = ''
   role = 'host'
   channelName = ''
-  cultures = ''
-  translateSource = ''
-  translateTarget = ''
   AEC = true
   AGC = true
   ANS = true

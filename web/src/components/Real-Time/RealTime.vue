@@ -11,17 +11,19 @@
           <el-input v-model="roomConfig.channelName" placeholder="Enter Room Name" suffix-icon="el-icon-s-home"
             @input="(val) => (roomConfig.channelName = roomConfig.channelName.toUpperCase())" />
         </el-form-item>
+        <div>RTT Config</div>
         <el-form-item label="Language:" prop="cultures">
           <el-autocomplete v-model="roomConfig.cultures" class="inline-input drop-down" :fetch-suggestions="querySearch"
             :trigger-on-focus="true" placeholder="Enter Languages" @select="handleSelect" @change="handleChanged">
             <i slot="suffix" class="el-input__icon el-icon-error" @click="clearCulList" />
           </el-autocomplete>
         </el-form-item>
-        <el-form-item label="Translate To:" prop="translateTo">
-          <el-autocomplete v-model="roomConfig.translation" class="inline-input drop-down" :fetch-suggestions="querySearch"
-            :trigger-on-focus="true" placeholder="Enter Translate Languages" @select="handleTranslationSelect"
+        <div v-if="this.transcriptions.length > 0">Translate Config</div>
+        <el-form-item v-for="(item, index) in transcriptions" :label="tanslateItemTitle(item)" prop="translateTo" :key="index">
+          <el-autocomplete v-model="translationStrings[item]" class="inline-input drop-down" :fetch-suggestions="translateQuerySearch"
+            :trigger-on-focus="true" placeholder="Enter Translate Languages" @select="((trans) => {handleTranslationSelect(item, trans)})"
             @change="handleTranslationChanged">
-            <i slot="suffix" class="el-input__icon el-icon-error" @click="clearTranslation" />
+            <i slot="suffix" class="el-input__icon el-icon-error" @click="clearTranslation(item)" />
           </el-autocomplete>
         </el-form-item>
         <el-form-item label="Join As:">
@@ -34,6 +36,10 @@
           <el-button type="primary" style="width:80%" @click="onSubmit">JOIN</el-button>
         </div>
       </el-form>
+      <div class="lang-log">
+        RTT web demo. Agora. 2023<br/>
+        {{ sttConfig }}
+      </div>
     </div>
     <!-- Setting Dialog -->
     <el-dialog title="Settings" :visible.sync="dialogFormVisible" width="400px" :close-on-click-modal="false">
@@ -72,7 +78,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">Cancel</el-button
+        <el-button @click="dialogFormVisible = false">Cancel</el-button>
         <el-button type="primary" @click="dialogFormVisible = false">Confirm</el-button>
       </div>
     </el-dialog>
@@ -81,6 +87,7 @@
 
 <script>
 import roomConfig from '@/components/RoomConfig.js'
+import sttConfig from '@/components/SttConfig.js'
 import router from "@/router";
 const VUE_APP_ID = process.env.VUE_APP_ID
 export default {
@@ -89,6 +96,12 @@ export default {
     return {
       appId: VUE_APP_ID,
       roomConfig: roomConfig, // room config, singleton, will be pass to next room page
+      sttConfig: sttConfig,
+      transcriptions: sttConfig.transcriptions,
+      translations: sttConfig.translations,
+      translationStrings: {},
+      langConfig1: {},
+      langConfig2: {},
       rules: {
         channelName: [{ required: true, message: 'roomName is required', trigger: 'blur' }],
         userName: [{ required: true, message: 'userName is required', trigger: 'blur' }],
@@ -101,18 +114,16 @@ export default {
         AGC: true,
         ANS: true
       },
-      rules: {
-        channelName: [{ required: true, message: 'roomName is required', trigger: 'blur' }],
-        userName: [{ required: true, message: 'userName is required', trigger: 'blur' }],
-        cultures: [{ required: true, message: 'languages is required', trigger: 'change' }]
-      },
       dialogFormVisible: false,
     }
   },
   mounted() {
     this.cultureList = this.loadCultures()
+    this.translateTargetList = this.loadTanslateTargets()
     window.tmpCulList = []
     window.tmpTranslationList = []
+  },
+  computed: {
   },
   methods: {
     loadCultures() {
@@ -151,6 +162,28 @@ export default {
       });
       return langs
     },
+    loadTanslateTargets() {
+      let trans = [
+        {"code": "zh-Hans", "value": "Chinese Simplified"},
+        {"code": "zh-Hant", "value": "Chinese Traditional"},
+        {"code": "yue",     "value": "Chinese (Cantonese, Traditional)"},
+        {"code": "hi",      "value": "Hindi"},
+        {"code": "ar",      "value": "Arabic"},
+        {"code": "en",      "value": "English"},
+        {"code": "id",      "value": "Indonesian"},
+        {"code": "ko",      "value": "Korean"},
+        {"code": "ja",      "value": "Japanese"},
+        {"code": "de",      "value": "Germany"},
+        {"code": "es",      "value": "Spanish"},
+        {"code": "fr",      "value": "French"},
+        {"code": "it",      "value": "Italian"},
+        {"code": "pt-PT",   "value": "Portuguese (Portugal)"},
+      ]
+      trans.sort(function (a, b) {
+        return a.value > b.value ? 1 : -1
+      });
+      return trans
+    },
     onSubmit() {
       this.$refs['form'].validate((valid) => {
         if (valid) {
@@ -161,22 +194,10 @@ export default {
       })
     },
     // cultures
-    clearCulList() {
-      tmpCulList = []
-      this.roomConfig.cultures = ''
-    },
-    // translate
-    clearTranslation() {
-      this.roomConfig.translation = ''
-    },
-    handleTranslationSelect(translateLang) {
-      const arr = tmpTranslationList
-      const hit = false
-      this.roomConfig.translateTarget = translateLang.code
-    },
-    handleTranslationChanged(translateLang) {
-      console.log(translateLang)
-      this.roomConfig.translation = translateLang.code
+    querySearch(queryString, cb) {
+      if (cb) {
+        cb(this.cultureList)
+      }
     },
     handleChanged(val) {
       const arr = String(val).split(',')
@@ -190,21 +211,18 @@ export default {
         tmpCulList.push(arr[0])
         tmpCulList.push(arr[1])
       }
+      console.log(tmpCulList)
       val = tmpCulList.join(',')
     },
-    querySearch(queryString, cb) {
-      if (cb) {
-        cb(this.cultureList)
-      }
-    },
     handleSelect(cul) {
-      const arr = tmpCulList
+      const arr = this.transcriptions
+      const trans = this.translations
       let hit = false
       if (arr.length > 1) {
         this.roomConfig.cultures = arr.join(',')
         return
       }
-      for (let i = 0;i < this.cultureList.length;i++) {
+      for (let i = 0; i < this.cultureList.length; i++) {
         const e = this.cultureList[i]
         if (arr[0] === e.value) {
           arr[0] = cul.code
@@ -217,11 +235,79 @@ export default {
         }
       }
       if (arr.length < 2 && !hit) {
+        console.log(cul)
         arr.push(cul.code)
+        console.log(arr)
+        trans[cul.code] = []
         // tmpCulList.push(cul.code);
       }
       this.roomConfig.cultures = arr.join(',')
-      this.roomConfig.translateSource = arr[0]
+      this.roomConfig.translateSource = arr
+    },
+    clearCulList() {
+      console.log('Clear languages')
+      console.log(this.transcriptions)
+      console.log(this.translations)
+      tmpCulList = []
+      this.transcriptions.forEach((code) => {
+        delete(this.translations[code])
+      })
+      this.transcriptions.splice(0)
+      this.roomConfig.cultures = ''
+    },
+
+    // translate
+    // Get translation
+    translateQuerySearch(queryString, cb) {
+      if (cb) {
+        cb(this.translateTargetList)
+      }
+    },
+    tanslateItemTitle(item) {
+      let text = item + ' to:'
+      return text
+    },
+    tanslationsItem(code) {
+      const arr = this.tanslations[code]
+      console.log(arr)
+      const str = arr.join(',')
+      return str
+    },
+    clearTranslation(sourceLang) {
+      this.translations[sourceLang].splice(0)
+      this.translationStrings[sourceLang] = this.translations[sourceLang].join(',')
+    },
+    // On tanslate target select
+    handleTranslationSelect(sourceLang, translateLang) {
+      console.log(sourceLang)
+      console.log(translateLang.code)
+      console.log(this.translations[sourceLang])
+      const arr = tmpTranslationList
+      var hit = false
+      // check if already in list
+      this.translations[sourceLang].forEach((l) => {
+        if (l == translateLang.code) {
+          console.log('existed')
+          hit = true
+        }
+      })
+      if (hit) {
+        this.translationStrings[sourceLang] = this.translations[sourceLang].join(',')
+        console.log(this.translationStrings[sourceLang])
+        return
+      }
+      console.log('add translation target ' + translateLang.value)
+      // max is 2
+      if (this.translations[sourceLang].length >= 2 && !hit) {
+        this.translations[sourceLang].splice(0, 1)
+      }
+      this.translations[sourceLang].push(translateLang.code)
+      this.translationStrings[sourceLang] = this.translations[sourceLang].join(',')
+      this.roomConfig.translateTarget = translateLang.code
+    },
+    handleTranslationChanged(translateLang) {
+      // console.log(translateLang)
+      // this.roomConfig.translation = translateLang.code
     },
   }
 }
@@ -231,8 +317,18 @@ export default {
 .real-time-panel {
   margin: auto;
   margin-top: 80px;
+  box-sizing: border-box;
+  width: 90%;
 }
 .drop-down {
   width: 100%;
+}
+.lang-log {
+  margin: auto;
+  margin: 10px;
+  width: 100%;
+  padding: 1rem;
+  color: #ccc;
+  box-sizing: border-box;
 }
 </style>

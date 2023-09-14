@@ -4,7 +4,9 @@
       <div class="room-view">
         <div class="room-title">Channel: {{ roomConfig.channelName }}</div>
         <div class="room-info">Stt Lanaguage(s): {{ roomConfig.cultures }}</div>
-        <div class="room-info">Translate {{ roomConfig.translateSource }} to {{ roomConfig.translateTarget }}</div>
+        <div class="room-info" v-for="(obj, index) in sttConfig.transcriptions">
+          Translate {{ obj }} to {{ sttConfig.translations[obj].join(',') }}
+        </div>
         <div class="room-subtitle" ref="subtitleArea">
           <SubtitleCell v-for="(subtitle, index) in subtitles" :subtitle="subtitle" :key="index"/>
         </div>
@@ -51,9 +53,10 @@
 </template>
 
 <script type="js">
-import { faTurkishLiraSign } from '@fortawesome/free-solid-svg-icons';
+import { faTurkishLiraSign } from '@fortawesome/free-solid-svg-icons'
 import SubtitleCell from './SubtitleCell.vue'
-import roomConfig from "@/components/RoomConfig.js";
+import roomConfig from "@/components/RoomConfig.js"
+import sttConfig from '@/components/SttConfig.js'
 import { async, ninvoke } from "q";
 import router from '@/router';
 import { logger } from 'agora-rte-extension';
@@ -83,6 +86,7 @@ export default {
       userList: [],
       hostList: [],
       roomConfig: roomConfig,
+      sttConfig: sttConfig,
       displayFullText: false,
       fullTranslation: '',
       displayConversation: false,
@@ -141,16 +145,18 @@ export default {
       if (sttApiManager.isOverdue()) {
         // acquire token and start
         console.log('Start STT in channel ' + this.roomConfig.channelName)
+        console.log('STT Config: ' + this.sttConfig.transcriptions)
+        console.log('STT Config: ' + this.sttConfig.translations)
         sttApiManager.acquire(this.roomConfig.channelName, (success, tokenName) => {
           self.sttTokenName = tokenName
-          sttApiManager.start(this.roomConfig.channelName, this.roomConfig.cultures, this.roomConfig.translateSource, this.roomConfig.translateTarget, (success, taskIdorErrorMessage) => {
+          sttApiManager.start(this.roomConfig.channelName, this.roomConfig.cultures, this.sttConfig, (success, taskIdorErrorMessage) => {
             self.updateUI(success, taskIdorErrorMessage)
           })
         })
       }
       else {
         // use token to start
-        sttApiManager.start(this.roomConfig.channelName, this.roomConfig.cultures, this.roomConfig.translateSource, this.roomConfig.translateTarget, (success, taskIdorErrorMessage) => {
+        sttApiManager.start(this.roomConfig.channelName, this.roomConfig.cultures, this.sttConfig, (success, taskIdorErrorMessage) => {
           self.updateUI(success, taskIdorErrorMessage)
         })
       }
