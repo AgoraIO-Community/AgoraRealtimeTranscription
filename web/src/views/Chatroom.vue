@@ -4,11 +4,12 @@
       <div class="room-view">
         <div class="room-title">Channel: {{ roomConfig.channelName }}</div>
         <div class="room-info">Stt Lanaguage(s): {{ roomConfig.cultures }}</div>
+        <div v-if="sttConfig.transcriptions.length<=0" class="room-info">No translation</div>
         <div class="room-info" v-for="(obj, index) in sttConfig.transcriptions">
           Translate {{ obj }} to {{ sttConfig.translations[obj].join(',') }}
         </div>
         <div class="room-subtitle" ref="subtitleArea">
-          <SubtitleCell v-for="(subtitle, index) in subtitles" :subtitle="subtitle" :key="index"/>
+          <SubtitleCell v-for="(subtitle, index) in subtitles" :subtitle="subtitle" :key="index" :displayTranslation="displayTranslations"/>
         </div>
       </div>
     </div>
@@ -30,6 +31,10 @@
       </div>
       <el-button size="mini" v-show="true" :disabled="!rtcJoined" type="danger" @click="leaveRoom">Leave Room</el-button>
       <!-- <el-button size="mini" v-show="false" type="primary" plain @click="queryFanl" :disabled="!taskId">Query status</el-button> -->
+      <div>
+        <div class="switch-title">Display translations</div>
+        <el-switch v-model="displayTranslations" size="large" active-text="ON" inactive-text="OFF"></el-switch>
+      </div>
     </div>
     <!-- Full Transcription -->
     <el-drawer title="Full Transcription" :visible.sync="displayFullText">
@@ -44,7 +49,7 @@
           <div v-if="item.text" class="subtitle-cell">
             <div class="user-name">{{ rtcMgr.allData[item.uid].name }} ({{ item.uid }}) {{ item.time != 0 ? new Date(parseInt(item.time)).toLocaleString() : 'N/A' }} </div>
             <div class="subtitle-text">{{ item.text }}</div>
-            <div class="translation-text">{{ item.translation[0] }}</div>
+            <div class="translation-text" v-for="(tran, index) in item.translation" :key="index">{{ tran }}</div>
           </div>
         </div>
       </div>
@@ -61,7 +66,7 @@ import { async, ninvoke } from "q";
 import router from '@/router';
 import { logger } from 'agora-rte-extension';
 import rtcMgr from "@/components/RtcManager.js"           // Agora RTC manager class
-import rtmMgr from "@/components/RtmManager.js"           // Agora RTM manager class
+//import rtmMgr from "@/components/RtmManager.js"           // Agora RTM manager class
 import sttApiManager from "@/components/STTApiManager.js" // STT manager class js
 import subtitleManager from '@/components/SubtitleManager'
 import gptSetting from "@/components/GPT/GptSetting.js"
@@ -86,6 +91,7 @@ export default {
       userList: [],
       hostList: [],
       roomConfig: roomConfig,
+      displayTranslations: false,
       sttConfig: sttConfig,
       displayFullText: false,
       fullTranslation: '',
@@ -103,28 +109,32 @@ export default {
     }
   },
   created: function() {
+    console.log('Chatroom created.')
     // join channel
-    rtmMgr.delegate = this
+    //rtmMgr.delegate = this
     rtcMgr.delegate = this
-  },
-  mounted: function() {
-    console.log(roomConfig)
     window.addEventListener('beforeunload', e => this.unloadHandler(e))
     window.addEventListener('unload', function(event) {
         console.log('unload')
-        this.leaveRoom()
+        //this.leaveRoom()
         // 加一段同步代码阻塞一下，不然刷新会发不出去异步请求
         let now = new Date()
         while (new Date() - now < 100) { }
     })
+  },
+  mounted: function() {
+    console.log(roomConfig)
     if (roomConfig.channelName == '') {
+      console.warn('No channel name, back to home page..')
       router.push('/')
       return
     }
-    this.startRtcCall()
+    else {
+      this.startRtcCall()
+    }
   },
   beforeDestroy() {
-    console.log('chatroom destory.')
+    console.log('chatroom before destory.')
     this.leaveRoom()
     window.removeEventListener('beforeunload', e => this.unloadHandler(e))
   },
@@ -135,6 +145,12 @@ export default {
       this.loading = true
       this.subtitles = []
 
+      if ( this.sttConfig.transcriptions.length <= 0 ) {
+        console.warn('No transcription language. Can not start STT task.')
+        this.updateUI(false, false, 'No transcription language. Can not start STT task.')
+        this.loading = false
+        return
+      }
       // save channel 
       if (sttApiManager.channel != this.roomConfig.channelName) {
         sttApiManager.tokenName = ""
@@ -145,19 +161,20 @@ export default {
       if (sttApiManager.isOverdue()) {
         // acquire token and start
         console.log('Start STT in channel ' + this.roomConfig.channelName)
-        console.log('STT Config: ' + this.sttConfig.transcriptions)
+        console.log('STT Config: ' + this.sttConfig.transcriptions + ':' + this.sttConfig.transcriptions.length)
         console.log('STT Config: ' + this.sttConfig.translations)
+
         sttApiManager.acquire(this.roomConfig.channelName, (success, tokenName) => {
           self.sttTokenName = tokenName
           sttApiManager.start(this.roomConfig.channelName, this.roomConfig.cultures, this.sttConfig, (success, taskIdorErrorMessage) => {
-            self.updateUI(success, taskIdorErrorMessage)
+            self.updateUI(success, success, taskIdorErrorMessage)
           })
         })
       }
       else {
         // use token to start
         sttApiManager.start(this.roomConfig.channelName, this.roomConfig.cultures, this.sttConfig, (success, taskIdorErrorMessage) => {
-          self.updateUI(success, taskIdorErrorMessage)
+          self.updateUI(success, success, taskIdorErrorMessage)
         })
       }
       return
@@ -167,7 +184,9 @@ export default {
       this.loading = true
       sttApiManager.stop(this.taskId, this.sttTokenName, (result, message) => {
         if ( result ) {
-          this.updateUI(false, '')
+          this.updateUI(true, false, '')
+        } else {
+          this.updateUI(false, true, message)
         }
         this.loading = false
       })
@@ -188,27 +207,28 @@ export default {
     // join channel
     async startRtcCall() {
       var self = this
+      // with no rtm
       // rtm init
-      rtmMgr.delegate = self
-      rtmMgr.login(this.roomConfig.userName, (loginSuccess) => {
-        if (loginSuccess) {
-          console.log("Rtm login success, start joining " + this.roomConfig.channel)
-          rtmMgr.join(this.roomConfig.channelName, (success) => {
-            if ( success ) {
-              console.log("[ChatRoom View] Rtm join channel success.")
-              self.rtmJoined = true
-            } else {
-              console.log("[ChatRoom View] RTM join failed");
-              self.loading = false
-              return
-            }
-          })
-        }
-        else {
-          console.log("[ChatRoom View] RTM login failed");
-          self.loading = false
-        }
-      })
+      // rtmMgr.delegate = self
+      // rtmMgr.login(this.roomConfig.userName, (loginSuccess) => {
+      //   if (loginSuccess) {
+      //     console.log("Rtm login success, start joining " + this.roomConfig.channel)
+      //     rtmMgr.join(this.roomConfig.channelName, (success) => {
+      //       if ( success ) {
+      //         console.log("[ChatRoom View] Rtm join channel success.")
+      //         self.rtmJoined = true
+      //       } else {
+      //         console.log("[ChatRoom View] RTM join failed");
+      //         self.loading = false
+      //         return
+      //       }
+      //     })
+      //   }
+      //   else {
+      //     console.log("[ChatRoom View] RTM login failed");
+      //     self.loading = false
+      //   }
+      // })
       // rtc init
       rtcMgr.delegate = self
       const config = {
@@ -224,7 +244,7 @@ export default {
           self.rtcJoined = true
           const userId = uid.toString()
           self.userList.unshift({ uid: userId, name: self.roomConfig.userName, online: false });
-          // console.log(self.userList)
+          console.log(self.roomConfig)
           rtcMgr.allData[userId] = {
             src: require('../../img/avatar' + userId.toString().slice(-1) + '.png'),
             name: self.roomConfig.userName
@@ -261,9 +281,9 @@ export default {
     },
 
     // Update UI after start
-    updateUI(started, taskIdOrMeesage) {
-      if ( started ) {
-        this.sttStarted = started;
+    updateUI(success, started, taskIdOrMeesage) {
+      this.sttStarted = started;
+      if ( success ) {
         this.loading = false;
         this.taskId = taskIdOrMeesage;
         this.sendStartSTTNotificationToPeers(true);
@@ -283,22 +303,22 @@ export default {
     async sendStartSTTNotificationToPeers(hasStarted) {
       console.log("[View] sendStartSTTNotificationToPeers")
       this.peerStartedSTT = hasStarted;
-      rtmMgr.getMembers().then((memberNames) => {
-        console.log("members in the channel are " + memberNames);
-        memberNames.forEach(async (member)=> {
-          if (this.roomConfig.userName != member) {
-            await this.rtmClient.sendMessageToPeer({
-              text: hasStarted ? "STT started" : "STT stopped"
-            },
-              member,
-            ).then(
-              console.log("message has been sent")
-            ).catch((error) => {
-              console.log("error while sending message", error);
-            });
-          }
-        })
-      })
+      // rtmMgr.getMembers().then((memberNames) => {
+      //   console.log("members in the channel are " + memberNames);
+      //   memberNames.forEach(async (member)=> {
+      //     if (this.roomConfig.userName != member) {
+      //       await this.rtmClient.sendMessageToPeer({
+      //         text: hasStarted ? "STT started" : "STT stopped"
+      //       },
+      //         member,
+      //       ).then(
+      //         console.log("message has been sent")
+      //       ).catch((error) => {
+      //         console.log("error while sending message", error);
+      //       });
+      //     }
+      //   })
+      // })
     },
     // leave room
     async leaveRoom() {
@@ -308,7 +328,7 @@ export default {
       if (sttApiManager.taskId != null && sttApiManager.taskId != "") {
         this.stopStt()
       }
-      rtmMgr.leave(this.roomConfig.channelName)
+      // rtmMgr.leave(this.roomConfig.channelName)
       subtitleManager.clear()
       this.uid = ''
       this.sttStarted = false
@@ -374,11 +394,12 @@ export default {
       //if (.taskId && this.tokenName) {
       //await this.leaveRoom();
 
-      console.log('aaaa')
+      console.log('unloadHandler :' + e)
+      roomConfig.channelName = ''
       // event.preventDefault();
-      var confirmationMessage = "Are you sure you want to leave?";
-      (e || window.event).returnValue = confirmationMessage; // 兼容 Gecko + IE
-      return confirmationMessage; // 兼容 Gecko + Webkit, Safari, Chrome
+      // var confirmationMessage = "Are you sure you want to leave?";
+      // (e || window.event).returnValue = confirmationMessage; // 兼容 Gecko + IE
+      // return confirmationMessage; // 兼容 Gecko + Webkit, Safari, Chrome
     },
   }
 }
@@ -455,6 +476,12 @@ export default {
       width: 140px;
       margin: 1rem 0 0rem 0;
       margin-left: 0;
+    }
+    .switch-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+      width: 100%;
+      text-align: left;
     }
 
     // .buttonBox {

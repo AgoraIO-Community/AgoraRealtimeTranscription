@@ -32,6 +32,7 @@ class RtcManager {
     this.rtc.client = AgoraRTC.createClient({ mode: "live", codec: "vp8", role: this.role });
     // get random uid for rtc
     this.uid = this.randomUInt(100000, 999999)
+    this.allData = {}
     console.log('self uid ' + this.uid)
   }
   
@@ -66,6 +67,7 @@ class RtcManager {
       src: require('../../img/avatar' + userId.toString().slice(-1) + '.png'),
       name: username
     }
+    console.log(this.allData)
 
     let track = await AgoraRTC.createMicrophoneAudioTrack({
       AEC: config.AEC,
@@ -104,31 +106,35 @@ class RtcManager {
   // handler functions
   // on user publish audio/video
   async onUserPublished(user, mediaType) {
-    let res = await this.rtc.client.subscribe(user, mediaType);
+    let res = await rtcMgr.rtc.client.subscribe(user, mediaType);
     let userId = user.uid.toString();
     if (mediaType === "audio") {
       const remoteAudioTrack = user.audioTrack;
       remoteAudioTrack.play();
     }
-    this.rtc.client.on("user-unpublished", async (user) => {
-      await this.rtc.client.unsubscribe(user);
+    rtcMgr.rtc.client.on("user-unpublished", async (user) => {
+      await rtcMgr.rtc.client.unsubscribe(user);
     });
   }
 
   // on host user joined rtc channel
   async onUserJoined(user) {
     console.log(user)
+    console.log(this)
+    console.log(rtcMgr)
     if (![1000, 2000, this.uid].includes(user.uid)) {
-      this.hostList.push(user.uid);
-      const channelAttributes = await this.rtmClient.getChannelAttributes(this.options.channel);
+      //this.hostList.push(user.uid);
+      //const channelAttributes = await this.rtmClient.getChannelAttributes(this.options.channel);
       console.log('user join ' + user.uid)
-      if (channelAttributes[user.uid]) {
-        this.userList.push({ uid: user.uid, name: channelAttributes[user.uid].value, online: false })
-        this.allData[user.uid] = {
+      console.log(rtcMgr.allData)
+      //if (channelAttributes[user.uid]) {
+        //this.userList.push({ uid: user.uid, name: channelAttributes[user.uid].value, online: false })
+        rtcMgr.allData[user.uid] = {
           src: require('../../img/avatar' + user.uid.toString().slice(-1) + '.png'),
-          name: channelAttributes[user.uid].value
+          name: user.uid //channelAttributes[user.uid].value
         }
-      }
+      //}
+      console.log(rtcMgr.allData)
     }
   }
 
@@ -136,8 +142,8 @@ class RtcManager {
   async onUserLeft(user, reason) {
     if (rtcMgr.allData[user.uid] != undefined) {
       delete rtcMgr.allData[user.uid];
-      rtcMgr.userList.splice(rtcMgr.hostList.indexOf(user.uid), 1);
-      rtcMgr.hostList.splice(rtcMgr.hostList.indexOf(user.uid), 1);
+      //rtcMgr.userList.splice(rtcMgr.hostList.indexOf(user.uid), 1);
+      //rtcMgr.hostList.splice(rtcMgr.hostList.indexOf(user.uid), 1);
     }
   }
 

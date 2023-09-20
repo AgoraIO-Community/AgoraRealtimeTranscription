@@ -6,7 +6,8 @@ import {
   Drawer, Avatar, MessageBox, Dialog,
   Tooltip, Tabs, TabPane, Upload,
   Header, Footer, Main, Container,
-  Row, Col, Select, Option, Slider, InputNumber} 
+  Row, Col, Select, Option, 
+  Slider, InputNumber, Switch} 
 from "element-ui";
 // 注意：导入的组件都需要使用 Vue.use() 进行注册
 Vue.use(Button);
@@ -33,6 +34,7 @@ Vue.use(Select);
 Vue.use(Option);
 Vue.use(Slider);
 Vue.use(InputNumber);
+Vue.use(Switch);
 
 Vue.prototype.$message = Message
 Vue.prototype.$confirm = MessageBox.confirm;

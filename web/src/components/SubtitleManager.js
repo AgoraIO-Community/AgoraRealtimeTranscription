@@ -77,9 +77,9 @@ class SubtitleManager {
           subtitle.isFinal = isFinalTrans
           subtitle.isTranslate = true
           subtitle.time = textstream.time
-          // console.log(subtitle)
+          console.log(subtitle)
           this.appendSubtitle(subtitle)
-          callback(true, subtitle)
+          //callback(true, subtitle)
         })
         break
     }
@@ -136,7 +136,13 @@ class SubtitleManager {
     }
 
     if (subtitle.isTranslate) {
-      last.translation = subtitle.translation
+      if (last.translation != undefined && last.translation.length > 0) {
+        console.log("追加翻译" + last.translation)
+        last.translation = last.translation.concat(subtitle.translation)
+      }
+      else {
+        last.translation = subtitle.translation
+      }
     }
     else {
       if (last.isFinal) {
@@ -148,7 +154,7 @@ class SubtitleManager {
         last.text = subtitle.text
       }
     }
-    // console.log(this.subtitleList)
+    //console.log(this.subtitleList)
   }
 
   clear() {

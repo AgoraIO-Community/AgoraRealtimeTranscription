@@ -1,8 +1,9 @@
 <template>
-  <div>
+  <div class="enterance-div">
     <el-button class="setting-btn" icon="el-icon-setting" circle @click="dialogFormVisible = true" />
     <div class="real-time-panel">
-      <el-form ref="form" :model="roomConfig" label-width="110px" :rules="rules" >
+      <div class="lang-title">Channel Config</div>
+      <el-form ref="form" :model="roomConfig" label-width="110px" :rules="rules">
         <el-form-item label="User Name:" prop="userName">
           <el-input v-model="roomConfig.userName" placeholder="Enter Your Name"
             @input="(val) => (roomConfig.userName = roomConfig.userName.toUpperCase())" />
@@ -11,14 +12,14 @@
           <el-input v-model="roomConfig.channelName" placeholder="Enter Room Name" suffix-icon="el-icon-s-home"
             @input="(val) => (roomConfig.channelName = roomConfig.channelName.toUpperCase())" />
         </el-form-item>
-        <div>RTT Config</div>
+      <div class="lang-title">RTT Config</div>
         <el-form-item label="Language:" prop="cultures">
           <el-autocomplete v-model="roomConfig.cultures" class="inline-input drop-down" :fetch-suggestions="querySearch"
             :trigger-on-focus="true" placeholder="Enter Languages" @select="handleSelect" @change="handleChanged">
             <i slot="suffix" class="el-input__icon el-icon-error" @click="clearCulList" />
           </el-autocomplete>
         </el-form-item>
-        <div v-if="this.transcriptions.length > 0">Translate Config</div>
+        <div v-if="this.transcriptions.length > 0" class="lang-title">Translate Config</div>
         <el-form-item v-for="(item, index) in transcriptions" :label="tanslateItemTitle(item)" prop="translateTo" :key="index">
           <el-autocomplete v-model="translationStrings[item]" class="inline-input drop-down" :fetch-suggestions="translateQuerySearch"
             :trigger-on-focus="true" placeholder="Enter Translate Languages" @select="((trans) => {handleTranslationSelect(item, trans)})"
@@ -103,9 +104,9 @@ export default {
       langConfig1: {},
       langConfig2: {},
       rules: {
-        channelName: [{ required: true, message: 'roomName is required', trigger: 'blur' }],
-        userName: [{ required: true, message: 'userName is required', trigger: 'blur' }],
-        cultures: [{ required: true, message: 'languages is required', trigger: 'change' }]
+        channelName: [{ required: true, message: 'RoomName is required', trigger: 'blur' }],
+        userName: [{ required: true, message: 'UserName is required', trigger: 'blur' }],
+        //cultures: [{ required: true, message: 'languages is required', trigger: 'change' }]
       },
       loading: false,
       isMobile: false,
@@ -119,7 +120,7 @@ export default {
   },
   mounted() {
     this.cultureList = this.loadCultures()
-    this.translateTargetList = this.loadTanslateTargets()
+    this.translateTargetList = this.loadCultures()
     window.tmpCulList = []
     window.tmpTranslationList = []
   },
@@ -187,6 +188,7 @@ export default {
     onSubmit() {
       this.$refs['form'].validate((valid) => {
         if (valid) {
+          // set config
           router.push('chatroom')
         } else {
           return false
@@ -318,10 +320,20 @@ export default {
   margin: auto;
   margin-top: 80px;
   box-sizing: border-box;
-  width: 90%;
+  width: 100%;
 }
 .drop-down {
   width: 100%;
+}
+.enterance-div {
+  width: 90%;
+}
+div.lang-title {
+  width: 90%;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #555;
 }
 .lang-log {
   margin: auto;

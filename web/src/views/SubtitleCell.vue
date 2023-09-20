@@ -3,14 +3,14 @@
   <div class="user-panel">
     <div class="user-avatar"><el-avatar size="small" :src="rtcMgr.allData[subtitle.uid].src" /></div>
     <div class="user-name">
-      {{ rtcMgr.allData[subtitle.uid].name }} ({{ subtitle.uid }})
+      ({{ subtitle.uid }})
     </div>
   </div>
   <div class="text-panel">
     <div class="subtitle-text">
       {{ subtitle.text }}
     </div>
-    <div class="translation-text" v-for="(tran, index) in subtitle.translation" :key="index">{{ tran }}</div>
+    <div class="translation-text" v-if="displayTranslation" v-for="(tran, index) in subtitle.translation" :key="index">{{ tran }}</div>
   </div>
 </div>
 </template>
@@ -20,7 +20,8 @@ import rtcMgr from "@/components/RtcManager.js"           // Agora RTC manager c
 export default {
   name: 'SubtitleCell',
   props: {
-    subtitle: {type: Object, required: true}
+    subtitle: {type: Object, required: true},
+    displayTranslation: {type: Boolean, required: true}
   },
   data() {
     return {
@@ -29,7 +30,7 @@ export default {
   },
   created: function() {
     // join channel
-    // console.log(rtcMgr)
+    console.log(rtcMgr.allData)
   },
   methods: {
     

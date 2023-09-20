@@ -2,8 +2,8 @@
 <template>
   <div v-loading="isLoading">
     <div class="setting-area shadow-block">
-      <div class="setting-title">GPT Parameter</div>
-      <el-form ref="settingForm" label-width="160px" :model="gptSetting" label-position="right">
+      <div class="setting-title" v-if="showGptParam">GPT Parameter</div>
+      <el-form ref="settingForm" label-width="160px" :model="gptSetting" label-position="right" v-if="showGptParam">
         <el-row :gutter="16">
           <el-col :span="12">
         <el-form-item label="Temperature:" class="form-item">
@@ -23,7 +23,7 @@
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="Sample System:" class="form-item">
-              <el-select class="m-2" placeholder="Select Sample System" v-model="samplePromptTitle" @change="onPromptChanged" size="small" value-key="id">
+              <el-select class="m-2" placeholder="Select Sample System" v-model="samplePrompt" @change="onPromptChanged" size="small" value-key="id" ref="SampleSystemSelector">
                 <el-option
                   v-for="item in this.samplePrompts"
                   :key="item.id"
@@ -34,12 +34,12 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="Sample Text:">
-              <el-select class="m-2" placeholder="Select Sample Text" v-model="sampleTextTitle" @change="onSampleTextChanged" size="small">
+              <el-select class="m-2" placeholder="Select Sample Text" v-model="sampleText" @change="onSampleTextChanged" size="small" value-key="id">
                 <el-option
                   v-for="item in this.sampleTexts"
                   :key="item.title"
                   :label="item.title"
-                  :value="item.text"/>
+                  :value="item"/>
               </el-select>
             </el-form-item>
           </el-col>
@@ -95,15 +95,16 @@ export default {
   data() {
     return {
       isLoading: false,
+      showGptParam: false,
       displayTextSetting: false,
       displayPromptSetting: false,
       displayResult: false,
       //
       temperature: 0.5,
       pastInclude: 1,
-      sampleTextTitle: '',
+      sampleText: {},
       sampleTexts: gptMgr.sampleTexts,
-      samplePromptTitle: '',
+      samplePrompt: {},
       samplePrompts: gptMgr.samplePrompts,
       resultText: "",
       //
@@ -122,7 +123,8 @@ export default {
     }
   },
   created() {
-    this.sampleTexts = gptMgr.sampleTexts,
+    this.samplePrompts = gptMgr.samplePrompts
+    this.sampleTexts = gptMgr.sampleTexts
     console.log(gptSetting)
   },
   methods: {
@@ -131,7 +133,33 @@ export default {
       this.displayTextSetting = true
     },
     onSampleTextChanged(val) {
-      gptSetting.userContent += val
+      console.log(val)
+      console.log(this.samplePrompts)
+      let promptSelect = this.$refs.SampleSystemSelector
+      console.log(promptSelect)
+      let text = ''
+      switch (val.id) {
+        case 1:
+        case 2:
+          // use prompt 1
+          this.samplePrompt = this.samplePrompts[0]
+          gptSetting.system = this.samplePrompts[0].system
+          text = this.samplePrompts[0].prompt + '\n' + val.text 
+          break
+        case 3:
+        case 4:
+          // use prompt 2
+          this.samplePrompt = this.samplePrompts[1]
+          gptSetting.system = this.samplePrompts[1].system
+          text = this.samplePrompts[1].prompt + '\n' + val.text 
+          break
+        default:
+          this.samplePrompt = this.samplePrompts[2]
+          gptSetting.system = this.samplePrompts[2].system
+          text = ''
+          break
+      }
+      gptSetting.userContent = text
     },
     showPromptSetting() {
       console.log('showPromptSetting')

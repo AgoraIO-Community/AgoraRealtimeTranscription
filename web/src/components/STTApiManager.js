@@ -5,6 +5,7 @@
 //
 
 import axios from 'axios'
+import { logger } from 'runjs/lib/common'
 
 const VUE_APP_ID = process.env.VUE_APP_ID
 const STT_BASE_PATH = process.env.VUE_APP_BASE_PATH
@@ -66,9 +67,18 @@ class STTApiManager {
     // log, delete before release
     //console.log("STTApiManager: start， in channel " + channel + ", language: " + languages)
     //console.log("TokenName is " + this.tokenName)
+    // no transcription
+    if ( sttConfig.transcriptions.length < 0 ) {
+      callback(false, 'No transcription language. Can not start STT task.')
+      return
+    }
+
     let languageStr = sttConfig.transcriptions.join(',')
     let translateConfig = []
     for (const [key, value] of Object.entries(sttConfig.translations)) {
+      if (value.length <= 0) {
+        continue
+      }
       console.log(key, value)
       let translateItem = {
         "source": key,
@@ -77,7 +87,7 @@ class STTApiManager {
       translateConfig.push(translateItem)
     }
     console.log('Start lanaguage: ' + languageStr)
-    console.log('Start translate: ' + translateConfig)
+    console.log('Start translate: ' + translateConfig + ':' + translateConfig.length)
     // sttConfig.translations.forEach((el) => {
     //   //
     //   let configItem = {
@@ -86,8 +96,7 @@ class STTApiManager {
     //   }
     //   translateConfig
     // })
-    axios.post(`${STT_BASE_PATH}/v1/projects/${VUE_APP_ID}/rtsc/speech-to-text/tasks?builderToken=${this.tokenName}`,
-    {
+    let requestBody = {
       "audio": {
         "subscribeSource": "AGORARTC",
         "agoraRtcConfig": {
@@ -119,12 +128,20 @@ class STTApiManager {
               "token": '' // 可选
             }
           }
-        },
-        "translateConfig": {
-          "languages": translateConfig
         }
       }
-    }, {
+    }
+    if (translateConfig.length > 0) {
+      (requestBody["config"])["translateConfig"] = {
+        "languages": translateConfig
+      }
+    }
+    else {
+      console.log('No translate target')
+      delete (requestBody["config"])["translateConfig"]
+    }
+    console.log(requestBody)
+    axios.post(`${STT_BASE_PATH}/v1/projects/${VUE_APP_ID}/rtsc/speech-to-text/tasks?builderToken=${this.tokenName}`, requestBody, {
       headers: { 
         'content-type': 'application/json',
         'Authorization': this.basicAuthentication()
@@ -171,12 +188,12 @@ class STTApiManager {
       let data = await res.text();
       let datas = JSON.parse(data);
 
-      //console.log(datas)
+      console.log(datas)
       if (!datas.message) {
         callback(true, "")
         self.clearSttData()
       } else {
-        callback(false, data.message)
+        callback(false, datas.message)
       }
     } else {
       this.loading = false

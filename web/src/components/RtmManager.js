@@ -27,11 +27,11 @@ class RtmManager {
 
     console.log(rtmOptions)
     await this.rtmClient.login(rtmOptions).then(() => {
-      console.log("[Mgr]RTM login success")
+      console.log("[RTM Mgr]RTM login success")
       this.joined = true;
       callback(true)
     }).catch(error => {
-      console.log("[Mgr]RTM login failed")
+      console.log("[RTM Mgr]RTM login failed")
       callback(false)
     })
   }
@@ -45,10 +45,10 @@ class RtmManager {
     const rtmChannel = await this.rtmClient.createChannel(channel);
     this.rtmChannel = rtmChannel;
     await this.rtmChannel.join().then(() => {
-      console.log("[Mgr]RTM channel join success");
+      console.log("[RTM Mgr]RTM channel join success");
       callback(true)
     }).catch(error => {
-      console.log("[Mgr]RTM channel join failed")
+      console.log("[RTM Mgr]RTM channel join failed")
       callback(false)
     });
 
@@ -59,12 +59,12 @@ class RtmManager {
 
   // leave channel
   async leave(channel) {
-    console.log('rtm logout.')
-    if ( rtmMgr.uid ) {
+    console.log('rtm joined:' + this.joined + ', logout. uid:' + this.uid)
+    if ( this.joined ) {
       await this.rtmClient.deleteChannelAttributesByKeys(channel, [rtmMgr.uid])
       await this.rtmChannel.leave()
+      await this.rtmClient.logout()
     }
-    await this.rtmClient.logout()
   }
 
   // get rtm member list

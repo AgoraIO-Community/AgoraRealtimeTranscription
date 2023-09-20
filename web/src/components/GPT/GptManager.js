@@ -489,7 +489,7 @@ Mantho: Okay. All right. All right.`
     { 
       'id': 5,
       'title': 'Empty',
-      'system': 'Empty',
+      'system': '',
       'prompt': '',
       'defaultText': 7
     }
