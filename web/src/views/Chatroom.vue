@@ -91,7 +91,7 @@ export default {
       userList: [],
       hostList: [],
       roomConfig: roomConfig,
-      displayTranslations: false,
+      displayTranslations: true,
       sttConfig: sttConfig,
       displayFullText: false,
       fullTranslation: '',
@@ -290,10 +290,11 @@ export default {
         // auto stop in 10 mins
         this.createSttAutoStopTimer(() => {
           if (this.taskId) {
-            console.log(new Date())
-            this.stopFanl()
+            console.log('Auto stop STT at: ' + new Date())
+            this.$message.info('Auto stop STT')
+            this.stopStt()
           }
-        }, 600000)
+        }, 10*60*1000)
       } else {
         this.sttStarted = false;
         this.loading = false;
