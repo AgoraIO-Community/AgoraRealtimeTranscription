@@ -105,3 +105,4 @@ iOSInjectionProject/
 Protobuffer/protoc-21.12-osx-aarch_64
 Protobuffer/package-lock.json
 Protobuffer/package.json
+*.log
